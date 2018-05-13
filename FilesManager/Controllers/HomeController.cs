@@ -68,6 +68,8 @@ namespace FilesManager.Controllers
 
             await blobStorage.UploadAsync(blobName, fileStream);
 
+            return RedirectToAction("Index");
+
             try
             {
                 using (SpreadsheetDocument mySpreadsheet = SpreadsheetDocument.Open(fileStream, false))

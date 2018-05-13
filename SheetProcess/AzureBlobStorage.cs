@@ -21,12 +21,17 @@ namespace SheetProcess
 
         public async Task<MemoryStream> CreateFromTemplate(string templateName, string fileName)
         {
-            var streamTemplate = await DownloadAsync(templateName);
+            var container = await GetContainerAsync();
+            container.CreateIfNotExists(BlobContainerPublicAccessType.Blob);
 
-            return streamTemplate;
-            await UploadAsync(fileName, streamTemplate);
+            var blockBlob = container.GetBlockBlobReference(templateName);
+            //lines added
+            var copyBlockBlob = container.GetBlockBlobReference(fileName);
 
-            return await DownloadAsync(fileName);
+            var cb = new AsyncCallback(x => Console.WriteLine("copy completed"));
+            copyBlockBlob.BeginStartCopy(blockBlob, cb, null);
+
+            return null;
         }
 
         public async Task UploadAsync(string blobName, string filePath)
