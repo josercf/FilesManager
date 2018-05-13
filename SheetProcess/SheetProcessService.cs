@@ -13,6 +13,9 @@ using S = DocumentFormat.OpenXml.Spreadsheet.Sheets;
 using E = DocumentFormat.OpenXml.OpenXmlElement;
 using A = DocumentFormat.OpenXml.OpenXmlAttribute;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure;
 
 namespace SheetProcess
 {
@@ -20,6 +23,7 @@ namespace SheetProcess
     {
         private readonly TraceWriter log;
         private readonly ICollector<FrontDocumentModel> queueCollector;
+        private readonly AzureTableStorage azureTableStorage;
 
         public SheetProcessService(ICollector<FrontDocumentModel> queueCollector, TraceWriter log)
         {
@@ -68,6 +72,7 @@ namespace SheetProcess
                 if (cellValue == "Carga Horária Total") workLoadCol = celHeader.CellReference.Value;
             }
 
+            //Loop for all lines, each line a document will be created
             foreach (Row row in rows.Skip(1))
             {
                 var cells = row.Descendants<Cell>();
@@ -76,6 +81,8 @@ namespace SheetProcess
 
                 if (string.IsNullOrWhiteSpace(document.StudentName)) continue;
                 log.Info($"Send data to queue: {document.StudentName}");
+
+                await azureTableStorage.Insert(document,nameof(document));
                 queueCollector.Add(document);
                 //using(var httpClient = new HttpClient())
                 //{
@@ -83,7 +90,6 @@ namespace SheetProcess
                 //}  
             }
         }
-
 
         private async Task<FrontDocumentModel> ExtractFrontDocumentData(SpreadsheetDocument doc, IEnumerable<Cell> cells,
                                                      string courseName, uint rowIndex,
@@ -94,9 +100,10 @@ namespace SheetProcess
 
             return await Task.Factory.StartNew(() =>
             {
-                var documentFront = new FrontDocumentModel();
-                documentFront.StudentName = GetCellValue(doc, cells.FindCell(STUDENT_NAME, rowIndex));
-                documentFront.StudentDocument = GetCellValue(doc, cells.FindCell(STUDENT_DOCUMENT, rowIndex));
+                var documentFront = new FrontDocumentModel(
+                    GetCellValue(doc, cells.FindCell(STUDENT_NAME, rowIndex)),
+                    GetCellValue(doc, cells.FindCell(STUDENT_DOCUMENT, rowIndex)));
+
                 documentFront.Course = courseName;
 
                 //Find by previus header founded

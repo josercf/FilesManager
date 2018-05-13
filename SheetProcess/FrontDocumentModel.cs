@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAzure.Storage.Table;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +7,17 @@ using System.Threading.Tasks;
 
 namespace SheetProcess
 {
-    public class FrontDocumentModel
+    public class FrontDocumentModel : TableEntity
     {
+        public FrontDocumentModel(string studentName, string studentDocument)
+        {
+            this.PartitionKey = studentName;
+            this.RowKey = studentDocument;
+
+            StudentName = studentName;
+            StudentDocument = studentDocument;
+        }
+
         public string StudentName { get; set; }
         public string StudentDocument { get; set; }
         public string Course { get; set; }
@@ -16,7 +26,8 @@ namespace SheetProcess
         public string WorkLoad { get; set; }
         public string DateOfIssue { get; set; }
 
-        public Dictionary<string, string> GetData(){
+        public Dictionary<string, string> GetData()
+        {
             var data = new Dictionary<string, string>();
 
             data.Add($"@{nameof(StudentName)}", StudentName);
@@ -29,7 +40,5 @@ namespace SheetProcess
 
             return data;
         }
-
-
     }
 }

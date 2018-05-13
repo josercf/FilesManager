@@ -40,7 +40,8 @@ namespace SheetProcess
             }
             else if (name.StartsWith("docs"))
             {
-
+                var docService = new DocProcessService();
+                await docService.Process(myBlob, "");
             }
         }
     }
