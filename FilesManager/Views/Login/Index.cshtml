@@ -1,0 +1,41 @@
+﻿@model FilesManager.Models.Login.LoginViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+    ViewBag.Title = "Login";
+}
+
+<div id="login-page" class="row center" style="margin-top:150px">
+    <div class="col s3">
+    </div>
+    <div class="col s6 z-depth-4 card-panel center">
+        <form asp-controller="Login" asp-action="Login" class="login-form" method="post">
+            <div class="row center indigo">
+                &nbsp;&nbsp; <img src="~/images/logo.png" />
+            </div>
+            <div class="row">
+            <div class="input-field col s12">
+                <i class="material-icons prefix pt-5">person_outline</i>
+                <input asp-for="@Model.usuario" />
+                <label asp-for="@Model.usuario" class="center-align">Email</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12">
+                <i class="material-icons prefix pt-5 ">lock_outline</i>
+                <input asp-for="@Model.senha" />
+                <label asp-for="@Model.senha" class="center-align">Senha</label>
+            </div>
+        </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <button class="btn waves-effect indigo" type="submit" name="action" value="Entrar">
+                        Entrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+

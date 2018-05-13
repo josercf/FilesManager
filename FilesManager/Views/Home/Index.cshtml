@@ -1,28 +1,87 @@
 ﻿@model FilesManager.Models.Home.FilesViewModel
 
+
+@{
+    ViewBag.Title = "Início";
+}
+
 <form asp-controller="Home" asp-action="UploadFile" method="post"
       enctype="multipart/form-data">
+    <br />
 
-    <input type="text" name="folder"  />
-    <input type="file" name="file" />
-    <button type="submit">Upload File</button>
+    <div class="row">
+        <label>Upload de arquivos</label>
+        <div class="file-field input-field">
+            <div class="col s10">
+                <div class="file-path-wrapper">
+                    <input class="file-path validate" type="text"
+                           placeholder="Nome do arquivo" disabled="disabled" />
+                </div>
+            </div>
+            <div class="btn waves-effect indigo">
+                <span> <i class="material-icons large">    add_circle</i></span>
+                <input type="file" name="file" />
+            </div>
+            <button class="btn waves-effect indigo" type="submit" name="action">
+                <i class="material-icons large">cloud_upload</i>
+            </button>
+
+        </div>
+    </div>
+
 </form>
+<br />
 
-<p>List of Blobs</p>
+<table class="responsive-table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th></th>
+        </tr>
+    </thead>
 
-<ul>
-    @foreach (var item in Model.Files)
-    {
-        <li>
-            <a asp-action="Download"
-               asp-route-blobName="@item.BlobName" asp-route-name="@item.Name">
-                Download
-            </a>
-            <a asp-action="Delete"
-               asp-route-blobName="@item.BlobName">
-                Delete
-            </a>
-            @item.Name
-        </li>
-    }
-</ul>
+    <tbody>
+        @foreach (var item in Model.Files)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <a asp-action="Download"
+                       asp-route-blobName="@item.BlobName" asp-route-name="@item.Name">
+                        <i class="material-icons">cloud_download</i>
+                    </a>
+                    <a asp-action="Delete"
+                       asp-route-blobName="@item.BlobName">
+                        <i class="material-icons">delete</i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<br />
+<br />
+<div class="row section">
+    <div class="col">
+        <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Modal</a>
+    </div>
+</div>
+
+<div id="modal1" class="modal">
+    <div class="modal-content">
+        <h4>Confirmação de exclusão</h4>
+        <p>Deseja excluir o registro?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="waves-effect indigo btn modal-trigger">Cancelar</a>
+        <a href="#!" class="waves-effect red darken-1 btn modal-trigger">Deletar</a>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.modal').modal();
+    });
+</script>

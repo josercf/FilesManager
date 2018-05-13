@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FilesManager.Storage;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,11 +26,17 @@ namespace FilesManager
             services.AddScoped<IAzureBlobStorage>(factory =>
             {
                 var storageAccount = Configuration["Blob_StorageAccount"];
-                var storageKey= Configuration["Blob_StorageKey"];
+                var storageKey = Configuration["Blob_StorageKey"];
                 var containerName = Configuration["Blob_ContainerName"];
 
                 return new AzureBlobStorage(new AzureBlobSetings(storageAccount, storageKey, containerName));
             });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                   .AddCookie(options =>
+                   {
+                       options.LoginPath = "/Login/UserLogin/";
+                   });
 
             services.AddMvc();
         }
@@ -37,6 +44,9 @@ namespace FilesManager
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+
+            app.UseAuthentication();
+
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
@@ -44,7 +54,7 @@ namespace FilesManager
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Login/Error");
             }
 
             app.UseStaticFiles();
@@ -53,7 +63,7 @@ namespace FilesManager
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Login}/{action=Index}/{id?}");
             });
         }
     }

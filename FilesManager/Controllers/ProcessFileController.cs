@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 using FilesManager.Models;
 using FilesManager.Storage;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilesManager.Controllers
@@ -48,7 +44,7 @@ namespace FilesManager.Controllers
         }
 
         [NonAction]
-        private async Task SearchAndReplace(string document,string fileName, FrontDocumentModel data)
+        private async Task SearchAndReplace(string document, string fileName, FrontDocumentModel data)
         {
             using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(document, true))
             {
@@ -78,9 +74,9 @@ namespace FilesManager.Controllers
                     await blobStorage.UploadAsync($@"docs/{fileName}", fileStream);
                 }
             });
-           
 
-            
+
+
         }
     }
 }
