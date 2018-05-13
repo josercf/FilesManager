@@ -6,16 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using S = DocumentFormat.OpenXml.Spreadsheet.Sheets;
 using E = DocumentFormat.OpenXml.OpenXmlElement;
-using A = DocumentFormat.OpenXml.OpenXmlAttribute;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
-using Microsoft.Azure;
 
 namespace SheetProcess
 {
@@ -25,8 +18,11 @@ namespace SheetProcess
         private readonly ICollector<FrontDocumentModel> queueCollector;
         private readonly AzureTableStorage azureTableStorage;
 
-        public SheetProcessService(ICollector<FrontDocumentModel> queueCollector, TraceWriter log)
+        public SheetProcessService(ICollector<FrontDocumentModel> queueCollector,  AzureBlobSetings settings, TraceWriter log)
         {
+            this.azureTableStorage = new AzureTableStorage(settings);
+            this.queueCollector = queueCollector;
+            this.log = log;
 
         }
         public async Task ProcessSheet(Stream file)
@@ -109,15 +105,12 @@ namespace SheetProcess
                 //Find by previus header founded
                 documentFront.StartDate = GetCellValue(doc, cells.FindCell(startDateCol, rowIndex)).ParseDate();
                 documentFront.EndDate = GetCellValue(doc, cells.FindCell(endDateCol, rowIndex)).ParseDate();
-                documentFront.WorkLoad = GetCellValue(doc, cells.FindCell(workLoadCol, rowIndex)).ParseDate();
-
+                documentFront.WorkLoad = GetCellValue(doc, cells.FindCell(workLoadCol, rowIndex));
+                documentFront.Status = "Aguardando processamento";
                 documentFront.DateOfIssue = DateTime.Now.ToString("dd/MM/yyyy") + ".";
                 return documentFront;
             });
         }
-
-
-
 
         private string ExtractCourseName(string courseName) => courseName.Substring("Pós-Graduação em ".Length);
 

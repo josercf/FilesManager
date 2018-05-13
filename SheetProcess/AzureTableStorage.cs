@@ -13,34 +13,23 @@ namespace SheetProcess
     public class AzureTableStorage
     {
         private readonly AzureBlobSetings settings;
-        // Create the table client.
-        private readonly CloudTableClient tableClient;
+
 
         public AzureTableStorage(AzureBlobSetings settings)
         {
             this.settings = settings;
-            // Retrieve the storage account from the connection string.
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
-                CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
-
-            // Create the table client.
-            var tableClient = storageAccount.CreateCloudTableClient();
         }
 
         public async Task Insert(ITableEntity model, string tableName)
         {
-            // Retrieve the storage account from the connection string.
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(
-                CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
-
             // Create the table client.
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+            var tableClient = await GetContainerAsync();
 
             // Create the CloudTable object that represents the "people" table.
             CloudTable table = tableClient.GetTableReference(tableName);
 
             // Create the TableOperation object that inserts the customer entity.
-            TableOperation insertOperation = TableOperation.Insert(model);
+            TableOperation insertOperation = TableOperation.InsertOrReplace(model);
 
             // Execute the insert operation.
             await table.ExecuteAsync(insertOperation);
@@ -49,15 +38,26 @@ namespace SheetProcess
         public async Task<T> Get<T>(string tableName, string partitionKey, string rowKey) where T : class, ITableEntity
         {
             // Create the table client.
-            var tableClient = GetContainerAsync();
+            var tableClient = await GetContainerAsync();
 
             // Create the CloudTable object that represents the "people" table.
-           // CloudTable table = tableClient.GetTableReference(tableName);
-
+            CloudTable table = tableClient.GetTableReference(tableName);
 
             var tableOperation = TableOperation.Retrieve<T>(partitionKey, rowKey);
             var tableResult = await table.ExecuteAsync(tableOperation);
-            return tableResult.Result as T ;
+            return tableResult.Result as T;
+        }
+
+        public async Task Update(ITableEntity model, string tableName)
+        {
+            // Create the table client.
+            var tableClient = await GetContainerAsync();
+
+            // Create the CloudTable object that represents the "people" table.
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            var tableOperation = TableOperation.Replace(model);
+            var tableResult = await table.ExecuteAsync(tableOperation);
         }
 
         private async Task<CloudTableClient> GetContainerAsync()

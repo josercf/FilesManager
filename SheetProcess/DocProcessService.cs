@@ -1,11 +1,8 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
-using Microsoft.WindowsAzure.Storage;
+using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -13,47 +10,60 @@ namespace SheetProcess
 {
     public class DocProcessService
     {
-        public DocProcessService()
-        {
+        private readonly AzureTableStorage azureTableStorage;
+        private readonly AzureBlobStorage azureBlobStorage;
+        private readonly TraceWriter log;
 
+        public DocProcessService(AzureBlobSetings settings, AzureTableStorage azureTableStorage,  TraceWriter log)
+        {
+            this.azureTableStorage = azureTableStorage;
+            this.azureBlobStorage = new AzureBlobStorage(settings);
+            this.log = log;
         }
 
-        public async Task Process(Stream doc, string fileName)
+        public async Task Process(byte[] b, FrontDocumentModel docData, string fileName)
         {
-
             try
             {
-                var docData = await RetrieveRecord("", "");
-                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(doc, true))
+                using (MemoryStream stream = new MemoryStream(b))
                 {
-                    string docText = null;
-                    using (StreamReader sr = new StreamReader(wordDoc.MainDocumentPart.GetStream()))
+                    using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(stream, true))
                     {
-                        docText = sr.ReadToEnd();
+                        string docText = null;
+
+                        using (StreamReader sr = new StreamReader(wordDoc.MainDocumentPart.GetStream()))
+                        {
+                            docText = sr.ReadToEnd();
+                        }
+
+                        foreach (var item in docData.GetData())
+                        {
+                            Regex regexText = new Regex(item.Key.ToUpper(), RegexOptions.CultureInvariant);
+                            docText = regexText.Replace(docText, item.Value);
+                        }
+
+                        using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
+                        {
+                            sw.Write(docText);
+                        }
+
+                        wordDoc.Save();
                     }
 
-                    foreach (var item in docData.GetData())
-                    {
-                        Regex regexText = new Regex(item.Key);
-                        docText = regexText.Replace(docText, item.Value);
-                    }
-
-
-                    using (StreamWriter sw = new StreamWriter(wordDoc.MainDocumentPart.GetStream(FileMode.Create)))
-                    {
-                        sw.Write(docText);
-
-                        sw.Close();
-                    }
+                    await azureBlobStorage.UploadAsync(fileName, stream);
+                    docData.Status = "Processado";
+                    await azureTableStorage.Update(docData, "document");
+                    log.Info($"Documento criado!");
                 }
 
-                log.Info($"Documento criado!");
+                
                 await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-
-                throw;
+                docData.Status = "Erro ao processar";
+                await azureTableStorage.Update(docData, "document");
+                log.Info($"Erro ao processar documento");
             }
         }
 

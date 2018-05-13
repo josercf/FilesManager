@@ -2,6 +2,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using System;
 
 namespace SheetProcess
 {
@@ -9,15 +10,21 @@ namespace SheetProcess
     {
         [FunctionName("CreateDocument")]
         public static async void RunAsync([QueueTrigger("toprocess", Connection = "AzureWebJobsStorage")]string myQueueItem,
-            CloudTable outputTable,
             TraceWriter log)
         {
             try
             {
                 log.Info($"C# Queue trigger function processed: {myQueueItem}");
-                var settings = new AzureBlobSetings("cosmoshoroscopob34c",
-                    "ortdcoPVj90rv0GyPGDzMN/jN+5K0izumxFbIqvRM6MiDcXQwcNLSJomGeDQE3RdfhowIyH9MQw856fikwiIrw==",
-                    "teste");
+
+                var storageAccount = GetEnvironmentVariable("Blob_StorageAccount");
+                var storageKey = GetEnvironmentVariable("Blob_StorageKey");
+                var containerName = GetEnvironmentVariable("Blob_ContainerName");
+
+                storageAccount = "cosmoshoroscopob34c";
+                storageKey = "ortdcoPVj90rv0GyPGDzMN/jN+5K0izumxFbIqvRM6MiDcXQwcNLSJomGeDQE3RdfhowIyH9MQw856fikwiIrw==";
+                containerName = "teste";
+
+                var settings = new AzureBlobSetings(storageAccount, storageKey, containerName);
 
                 var storage = new AzureBlobStorage(settings);
                 var docData = JsonConvert.DeserializeObject<FrontDocumentModel>(myQueueItem);
@@ -27,6 +34,12 @@ namespace SheetProcess
             {
                 log.Info($"Ocorreu um erro ao processar criar o novo arquivo");
             }
+        }
+
+        public static string GetEnvironmentVariable(string name)
+        {
+            return name + ": " +
+                System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
         }
     }
 }

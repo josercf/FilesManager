@@ -1,21 +1,23 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SheetProcess
 {
     public class FrontDocumentModel : TableEntity
     {
+        public FrontDocumentModel()
+        {
+
+        }
         public FrontDocumentModel(string studentName, string studentDocument)
         {
             this.PartitionKey = studentName;
-            this.RowKey = studentDocument;
+            this.RowKey = studentName;
 
             StudentName = studentName;
             StudentDocument = studentDocument;
+            CreatedAt = DateTime.Now;
         }
 
         public string StudentName { get; set; }
@@ -25,18 +27,21 @@ namespace SheetProcess
         public string EndDate { get; set; }
         public string WorkLoad { get; set; }
         public string DateOfIssue { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Status { get; set; }
 
         public Dictionary<string, string> GetData()
         {
-            var data = new Dictionary<string, string>();
-
-            data.Add($"@{nameof(StudentName)}", StudentName);
-            data.Add($"@{nameof(StudentDocument)}", StudentDocument);
-            data.Add($"@{nameof(Course)}", Course);
-            data.Add($"@{nameof(StartDate)}", StartDate);
-            data.Add($"@{nameof(EndDate)}", EndDate);
-            data.Add($"@{nameof(WorkLoad)}", WorkLoad);
-            data.Add($"@{nameof(DateOfIssue)}", DateOfIssue);
+            var data = new Dictionary<string, string>
+            {
+                { nameof(StudentName), StudentName },
+                { nameof(StudentDocument), StudentDocument },
+                { nameof(Course), Course },
+                { nameof(StartDate), StartDate },
+                { nameof(EndDate), EndDate },
+                { nameof(WorkLoad), WorkLoad },
+                { nameof(DateOfIssue), DateOfIssue }
+            };
 
             return data;
         }
