@@ -35,7 +35,7 @@ namespace FilesManager
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                    .AddCookie(options =>
                    {
-                       options.LoginPath = "/Login/UserLogin/";
+                       options.LoginPath = "/Login/Fail";
                    });
 
             services.AddMvc();
@@ -54,7 +54,7 @@ namespace FilesManager
             }
             else
             {
-                app.UseExceptionHandler("/Login/Error");
+                app.UseExceptionHandler("/Login");
             }
 
             app.UseStaticFiles();

@@ -13,20 +13,24 @@
             <div class="row center indigo">
                 &nbsp;&nbsp; <img src="~/images/logo.png" />
             </div>
+            @if (TempData["fail"] != null)
+            {
+                <p class="alert alert-danger" style="color:red">* @TempData["fail"]</p>
+            }
             <div class="row">
-            <div class="input-field col s12">
-                <i class="material-icons prefix pt-5">person_outline</i>
-                <input asp-for="@Model.usuario" />
-                <label asp-for="@Model.usuario" class="center-align">Email</label>
+                <div class="input-field col s12">
+                    <i class="material-icons prefix pt-5">person_outline</i>
+                    <input asp-for="@Model.usuario" />
+                    <label asp-for="@Model.usuario" class="center-align">Email</label>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="input-field col s12">
-                <i class="material-icons prefix pt-5 ">lock_outline</i>
-                <input asp-for="@Model.senha" />
-                <label asp-for="@Model.senha" class="center-align">Senha</label>
+            <div class="row">
+                <div class="input-field col s12">
+                    <i class="material-icons prefix pt-5 ">lock_outline</i>
+                    <input asp-for="@Model.senha" />
+                    <label asp-for="@Model.senha" class="center-align">Senha</label>
+                </div>
             </div>
-        </div>
             <div class="row">
                 <div class="input-field col s12">
                     <button class="btn waves-effect indigo" type="submit" name="action" value="Entrar">

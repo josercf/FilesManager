@@ -21,7 +21,7 @@
             <div class="btn waves-effect indigo">
                 <span> <i class="material-icons large">    add_circle</i></span>
                 <input type="file" name="file" />
-                <input type="hidden" name="folder"  value="uploads"/>
+                <input type="hidden" name="folder" value="uploads" />
             </div>
             <button class="btn waves-effect indigo" type="submit" name="action">
                 <i class="material-icons large">cloud_upload</i>
@@ -42,6 +42,7 @@
     </thead>
 
     <tbody>
+
         @foreach (var item in Model.Files)
         {
             <tr>
@@ -58,6 +59,7 @@
                 </td>
             </tr>
         }
+
     </tbody>
 </table>
 
@@ -85,4 +87,5 @@
     $(document).ready(function () {
         $('.modal').modal();
     });
+
 </script>
