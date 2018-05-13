@@ -15,6 +15,7 @@ using FilesManager.Models;
 using Newtonsoft.Json;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FilesManager.Controllers
 {
@@ -27,6 +28,7 @@ namespace FilesManager.Controllers
         }
     }
 
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IAzureBlobStorage blobStorage;
