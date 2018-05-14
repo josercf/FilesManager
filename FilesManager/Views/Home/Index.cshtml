@@ -54,10 +54,12 @@
                        asp-route-blobName="@item.BlobName" asp-route-name="@item.Name">
                         <i class="material-icons">cloud_download</i>
                     </a>
-                    <a asp-action="Delete"
-                       asp-route-blobName="@item.BlobName">
-                        <i class="material-icons">delete</i>
-                    </a>
+
+                    <button data-name="@item.BlobName" class="btn-delete btn modal-trigger"><i class="material-icons">delete</i></button>
+                    @*<a asp-action="Delete"
+                           asp-route-blobName="@item.BlobName">
+                            <i class="material-icons">delete</i>
+                        </a>*@
                 </td>
             </tr>
         }
@@ -80,13 +82,27 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="waves-effect indigo btn modal-trigger">Cancelar</a>
-        <a href="#!" class="waves-effect red darken-1 btn modal-trigger">Deletar</a>
+        <a id="modal-btn-delete" href="#"
+            class="waves-effect red darken-1 btn modal-trigger">
+            <i class="material-icons">delete</i>
+        </a>
+        <a href="#!">Deletar</a>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script>
-    $(document).ready(function () {
+
+    $('.btn-delete').on("click", function () {
+
+        var containerMsg = $("<p></p>").text($(this).data("name"));
+
+        $('.modal > .modal-content').append(containerMsg);
+        $('.modal > .modal-footer > #modal-btn-delete').attr("href", "/Home/Delete?blobName=" + $(this).data("name"));
+        $('.modal').modal('open');
+    });
+
+    $(document).ready(function () { 
         $('.modal').modal();
     });
 

@@ -3,17 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using FilesManager.Models.Home;
 using FilesManager.Storage;
 using System.Linq;
-using DocumentFormat.OpenXml.Packaging;
-using S = DocumentFormat.OpenXml.Spreadsheet.Sheets;
-using E = DocumentFormat.OpenXml.OpenXmlElement;
-using DocumentFormat.OpenXml.Spreadsheet;
-using System.Collections.Generic;
-using System;
-using System.Text.RegularExpressions;
-using System.Net.Http;
-using FilesManager.Models;
-using Newtonsoft.Json;
-using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 
