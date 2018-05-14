@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Docs\" />
+    <Folder Include="Models\Docs\" />
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 

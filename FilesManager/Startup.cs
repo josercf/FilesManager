@@ -23,14 +23,21 @@ namespace FilesManager
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var storageAccount = Configuration["Blob_StorageAccount"];
+            var storageKey = Configuration["Blob_StorageKey"];
+            var containerName = Configuration["Blob_ContainerName"];
+
+            var settings = new AzureBlobSetings(storageAccount, storageKey, containerName);
+
             services.AddScoped<IAzureBlobStorage>(factory =>
             {
-                var storageAccount = Configuration["Blob_StorageAccount"];
-                var storageKey = Configuration["Blob_StorageKey"];
-                var containerName = Configuration["Blob_ContainerName"];
-
-                return new AzureBlobStorage(new AzureBlobSetings(storageAccount, storageKey, containerName));
+                return new AzureBlobStorage(settings);
             });
+
+            services.AddTransient<AzureTableStorage, AzureTableStorage>(factory =>
+            {
+                return new AzureTableStorage(settings);
+            } );
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                    .AddCookie(options =>

@@ -5,6 +5,8 @@ using FilesManager.Storage;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
+using FilesManager.Models;
+using System.Collections.Generic;
 
 namespace FilesManager.Controllers
 {
@@ -14,22 +16,37 @@ namespace FilesManager.Controllers
     public class HomeController : Controller
     {
         private readonly IAzureBlobStorage blobStorage;
+        private readonly AzureTableStorage azureTableStorage;
         private readonly IHostingEnvironment _environment;
 
-        public HomeController(IAzureBlobStorage blobStorage, IHostingEnvironment environment)
+        public HomeController(IAzureBlobStorage blobStorage,
+                               AzureTableStorage azureTableStorage, IHostingEnvironment environment)
         {
+            this.azureTableStorage = azureTableStorage;
             this.blobStorage = blobStorage;
             this._environment = environment;
         }
 
         public async Task<IActionResult> Index()
         {
+
             var model = new FilesViewModel();
             var blobs = await blobStorage.ListAsync();
             foreach (var item in blobs.Where(c => c.Folder.Equals("docs")))
             {
+                var processed = false;
+
+                // dbRow != null &&
+                //                dbRow.StudentName == item.Name &&
+                //                dbRow.Status.ToLower() == "processado";
+
                 model.Files.Add(
-                    new FileDetails { Name = item.Name, BlobName = item.BlobName });
+                    new FileDetails
+                    {
+                        Name = item.Name,
+                        BlobName = item.BlobName,
+                        Processed = processed
+                    });
             }
 
             ViewBag.Message = ViewBag?.Message ?? string.Empty;
