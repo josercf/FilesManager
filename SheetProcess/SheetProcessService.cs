@@ -18,94 +18,129 @@ namespace SheetProcess
         private readonly ICollector<FrontDocumentModel> queueCollector;
         private readonly AzureTableStorage azureTableStorage;
 
-        public SheetProcessService(ICollector<FrontDocumentModel> queueCollector,  AzureBlobSetings settings, TraceWriter log)
+        public SheetProcessService(ICollector<FrontDocumentModel> queueCollector, AzureBlobSetings settings, TraceWriter log)
         {
             this.azureTableStorage = new AzureTableStorage(settings);
             this.queueCollector = queueCollector;
             this.log = log;
 
         }
+
         public async Task ProcessSheet(Stream file)
         {
             using (SpreadsheetDocument mySpreadsheet = SpreadsheetDocument.Open(file, false))
             {
                 S sheets = mySpreadsheet.WorkbookPart.Workbook.Sheets;
 
+                Task[] tasks = new Task[sheets.Count()];
+
+                int i = 0;
                 // For each sheet, display the sheet information.
                 foreach (E sheet in sheets)
                 {
+                    var sheetName = string.Empty;
+                    try
+                    {
+                        sheetName = sheet.GetAttributes().First(c => c.LocalName == "name").Value;
+                        var sheetId = sheet.GetAttributes().First(c => c.LocalName == "id").Value; 
+                        log.Info($"Sheet Founded: name: {sheetName}, id: {sheetId}");
 
-                    var sheetName = sheet.GetAttributes().First(c => c.LocalName == "name").Value;
-                    var sheetId = sheet.GetAttributes().First(c => c.LocalName == "id").Value;
-
-                    log.Info($"Sheet Founded: name: {sheetName}, id: {sheetId}");
-                    await ReadExcelSheet(mySpreadsheet, sheetId, sheetName, queueCollector, log);
-                    break;
+                        tasks[i] = ReadExcelSheet(mySpreadsheet, sheetId);
+                        i++;
+                        log.Info($"Sheet {sheetName} add to queue process");
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error($"Error on process sheet {sheetName} -> {ex}");
+                    }
                 }
+
+                Task.WaitAll(tasks);
+                log.Info($"End of file process");
             }
         }
-        private async Task ReadExcelSheet(SpreadsheetDocument doc, string workSheetId,
-                                                string sheetName, ICollector<FrontDocumentModel> queueCollector, TraceWriter log)
+        private async Task ReadExcelSheet(SpreadsheetDocument doc, string workSheetId)
         {
-            var worksheet = (doc.WorkbookPart.GetPartById(workSheetId) as WorksheetPart).Worksheet;
+            var workpart = (doc.WorkbookPart.GetPartById(workSheetId) as WorksheetPart);
+            var worksheet = workpart.Worksheet;
+
+            if (workpart == null) return;
+
             var rows = worksheet.GetFirstChild<SheetData>().Descendants<Row>().Skip(5);
 
-            //verificar se é pos ou extensão
-            const string COURSE = "F3";
-            string startDateCol = string.Empty, endDateCol = string.Empty, workLoadCol = string.Empty;
-            var courseName = ExtractCourseName(GetCellValue(doc, sheetName, COURSE));
+            //TODO: verificar se é pos ou extensão
+            string courseColPos = string.Empty, courseName = string.Empty;
 
-            //var metaHeader = new Dictionary<string, string>();
+            var cellsTitle = worksheet.GetFirstChild<SheetData>()
+                                      .Descendants<Row>().ElementAt(2)
+                                      .Descendants<Cell>();
+
+            courseName = FindCourseName(doc, cellsTitle);
+
+            var dataPos = new DataPosition();
             var header = rows.First().Descendants<Cell>();
-            for (int i = 0; i < header.Count(); i++)
-            {
-                Cell celHeader = header.ElementAt(i);
-                var cellValue = GetCellValue(doc, celHeader);
-                //metaHeader.Add(celHeader.CellReference.Value, cellValue);
 
-                if (cellValue == "Início") startDateCol = celHeader.CellReference.Value;
-                if (cellValue == "Término") endDateCol = celHeader.CellReference.Value;
-                if (cellValue == "Carga Horária Total") workLoadCol = celHeader.CellReference.Value;
-            }
+            //Map data on sheet
+            MapDataPosix(doc, dataPos, header);
 
             //Loop for all lines, each line a document will be created
+            await ProcessData(doc, rows, courseName, dataPos);
+        }
+
+        private async Task ProcessData(SpreadsheetDocument doc, IEnumerable<Row> rows, string courseName, DataPosition dataPos)
+        {
             foreach (Row row in rows.Skip(1))
             {
                 var cells = row.Descendants<Cell>();
-                var document = await ExtractFrontDocumentData(doc, cells, courseName, row.RowIndex.Value,
-                                                              startDateCol, endDateCol, workLoadCol);
+                var document = await ExtractFrontDocumentData(doc, cells, courseName,
+                                                              row.RowIndex.Value, dataPos);
 
                 if (string.IsNullOrWhiteSpace(document.StudentName)) continue;
                 log.Info($"Send data to queue: {document.StudentName}");
 
-                await azureTableStorage.Insert(document,nameof(document));
+                await azureTableStorage.Insert(document, nameof(document));
                 queueCollector.Add(document);
-                //using(var httpClient = new HttpClient())
-                //{
-                //    await httpClient.PostAsJsonAsync("http://localhost:16052/api/ProcessFile", document);
-                //}  
             }
         }
 
-        private async Task<FrontDocumentModel> ExtractFrontDocumentData(SpreadsheetDocument doc, IEnumerable<Cell> cells,
-                                                     string courseName, uint rowIndex,
-                                                     string startDateCol, string endDateCol, string workLoadCol)
+        private void MapDataPosix(SpreadsheetDocument doc, DataPosition dataPos, IEnumerable<Cell> header)
         {
-            const string STUDENT_NAME = "E";
-            const string STUDENT_DOCUMENT = "H";
+            for (int i = 0; i < header.Count(); i++)
+            {
+                Cell celHeader = header.ElementAt(i);
+                var cellValue = GetCellValue(doc, celHeader);
+                dataPos.GetDataPositions(cellValue, celHeader.CellReference.Value);
+            }
+        }
 
+        private string FindCourseName(SpreadsheetDocument doc, IEnumerable<Cell> cellsTitle)
+        {
+            for (int i = 0; i < cellsTitle.Count(); i++)
+            {
+                Cell celCourseTitle = cellsTitle.ElementAt(i);
+                var cellValue = GetCellValue(doc, celCourseTitle);
+
+                if (!string.IsNullOrWhiteSpace(cellValue) && 
+                    cellValue.StartsWith("Pós-Graduação")) return ExtractCourseName(cellValue);
+            }
+            return string.Empty;
+        }
+
+        private async Task<FrontDocumentModel> ExtractFrontDocumentData(SpreadsheetDocument doc, IEnumerable<Cell> cells,
+                                                     string courseName, uint rowIndex, DataPosition data)
+        {
             return await Task.Factory.StartNew(() =>
             {
                 var documentFront = new FrontDocumentModel(
-                    GetCellValue(doc, cells.FindCell(STUDENT_NAME, rowIndex)),
-                    GetCellValue(doc, cells.FindCell(STUDENT_DOCUMENT, rowIndex)));
+                    GetCellValue(doc, cells.FindCell(data.NameCol, rowIndex))?.Trim(),
+                    GetCellValue(doc, cells.FindCell(data.DocumentCol, rowIndex))?.Trim());
 
                 documentFront.Course = courseName;
 
                 //Find by previus header founded
-                documentFront.StartDate = GetCellValue(doc, cells.FindCell(startDateCol, rowIndex)).ParseDate();
-                documentFront.EndDate = GetCellValue(doc, cells.FindCell(endDateCol, rowIndex)).ParseDate();
-                documentFront.WorkLoad = GetCellValue(doc, cells.FindCell(workLoadCol, rowIndex));
+                documentFront.StartDate = GetCellValue(doc, cells.FindCell(data.StartDateCol, rowIndex))?.ParseDate();
+                documentFront.EndDate = GetCellValue(doc, cells.FindCell(data.EndDateCol, rowIndex))?.ParseDate();
+                documentFront.WorkLoad = GetCellValue(doc, cells.FindCell(data.WorkLoadCol, rowIndex));
                 documentFront.Status = "Aguardando processamento";
                 documentFront.DateOfIssue = DateTime.Now.ToString("dd/MM/yyyy") + ".";
                 return documentFront;

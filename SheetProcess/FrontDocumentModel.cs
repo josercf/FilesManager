@@ -12,6 +12,10 @@ namespace SheetProcess
         }
         public FrontDocumentModel(string studentName, string studentDocument)
         {
+            if(string.IsNullOrWhiteSpace(studentName) || 
+                string.IsNullOrWhiteSpace(studentDocument))
+                return;
+
             this.PartitionKey = studentName;
             this.RowKey = studentName;
 
@@ -29,6 +33,8 @@ namespace SheetProcess
         public string DateOfIssue { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; }
+
+
 
         public Dictionary<string, string> GetData()
         {

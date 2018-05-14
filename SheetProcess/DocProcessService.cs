@@ -51,13 +51,11 @@ namespace SheetProcess
                     }
 
                     await azureBlobStorage.UploadAsync(fileName, stream);
-                    docData.Status = "Processado";
-                    await azureTableStorage.Update(docData, "document");
+                     docData.Status = "Processado";
                     log.Info($"Documento criado!");
+                    await azureTableStorage.Update(docData, "document");
+                    log.Info($"Documento atualizado no storage");
                 }
-
-                
-                await Task.CompletedTask;
             }
             catch (Exception ex)
             {

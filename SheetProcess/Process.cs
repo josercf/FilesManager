@@ -2,7 +2,6 @@ using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using System;
-using Microsoft.Extensions.Configuration;
 
 namespace SheetProcess
 {
@@ -29,7 +28,7 @@ namespace SheetProcess
                 }
                 catch (Exception e)
                 {
-                    log.Info($"Ocorreu um erro: {e}");
+                    log.Error($"Ocorreu um erro: {e}");
                 }
                 log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
             }
