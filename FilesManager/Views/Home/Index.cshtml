@@ -39,6 +39,8 @@
     <thead>
         <tr>
             <th>Nome</th>
+            <th>Criado em</th>
+            <th>Status</th>
             <th></th>
         </tr>
     </thead>
@@ -47,21 +49,23 @@
 
         @foreach (var item in Model.Files)
         {
-            <tr>
-                <td>@item.Name</td>
-                <td>
-                    <a asp-action="Download"
-                       asp-route-blobName="@item.BlobName" asp-route-name="@item.Name">
-                        <i class="material-icons">cloud_download</i>
-                    </a>
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.CreatedAt</td>
+            <td>@item.Status</td>
+            <td>
+                <a asp-action="Download"
+                   asp-route-blobName="@item.BlobName" asp-route-name="@item.Name">
+                    <i class="material-icons">cloud_download</i>
+                </a>
 
-                    <button data-name="@item.BlobName" class="btn-delete btn modal-trigger"><i class="material-icons">delete</i></button>
-                    @*<a asp-action="Delete"
-                           asp-route-blobName="@item.BlobName">
-                            <i class="material-icons">delete</i>
-                        </a>*@
-                </td>
-            </tr>
+                <button data-name="@item.BlobName" class="btn-delete btn modal-trigger"><i class="material-icons">delete</i></button>
+                @*<a asp-action="Delete"
+               asp-route-blobName="@item.BlobName">
+                <i class="material-icons">delete</i>
+            </a>*@
+            </td>
+        </tr>
         }
 
     </tbody>

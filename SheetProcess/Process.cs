@@ -34,24 +34,31 @@ namespace SheetProcess
             }
             else if (name.StartsWith("docs"))
             {
-                var tableName = "document";
-                var azureTableStorage = new AzureTableStorage(settings);
-
-                //Is necessary create new byte array here, because has timeout and 
-                //we can't edite the word file after
-                byte[] b;
-                using (BinaryReader br = new BinaryReader(myBlob))
-                    b = br.ReadBytes((int)myBlob.Length);
-
-                var pk = ClearFileName(name);
-                var docData = await azureTableStorage.Get<FrontDocumentModel>(tableName, pk, pk);
-
-                if (docData?.Status == "Aguardando processamento")
+                try
                 {
-                    docData.Status = "Processando";
-                    await azureTableStorage.Update(docData, tableName);
-                    var docService = new DocProcessService(settings, azureTableStorage, log);
-                    await docService.Process(b, docData, name);
+                    var tableName = "document";
+                    var azureTableStorage = new AzureTableStorage(settings);
+
+                    //Is necessary create new byte array here, because has timeout and 
+                    //we can't edite the word file after
+                    byte[] b;
+                    using (BinaryReader br = new BinaryReader(myBlob))
+                        b = br.ReadBytes((int)myBlob.Length);
+
+                    var pk = ClearFileName(name);
+                    var docData = await azureTableStorage.Get<FrontDocumentModel>(tableName, pk, pk);
+
+                    if (docData?.Status == "Aguardando processamento")
+                    {
+                        docData.Status = "Processando";
+                        await azureTableStorage.Update(docData, tableName);
+                        var docService = new DocProcessService(settings, azureTableStorage, log);
+                        await docService.Process(b, docData, name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Erro ao receber docx: {ex}");
                 }
             }
         }

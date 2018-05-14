@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using FilesManager.Models;
 using System.Collections.Generic;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace FilesManager.Controllers
 {
@@ -34,18 +36,25 @@ namespace FilesManager.Controllers
             var blobs = await blobStorage.ListAsync();
             foreach (var item in blobs.Where(c => c.Folder.Equals("docs")))
             {
-                var processed = false;
 
-                // dbRow != null &&
-                //                dbRow.StudentName == item.Name &&
-                //                dbRow.Status.ToLower() == "processado";
+                var http = new HttpClient();
+                var url = string.Format("http://localhost:7071/api/GetDocument?blobname={0}", item.BlobName);
+                var response = await http.GetAsync(url);
+                var result = await response.Content.ReadAsStringAsync();
+
+                var metaData = JsonConvert.DeserializeObject<Models.FrontDocumentModel>(result);
+
+                var processed = metaData != null &&
+                                metaData.Status.ToLower() == "processado";
 
                 model.Files.Add(
                     new FileDetails
                     {
                         Name = item.Name,
                         BlobName = item.BlobName,
-                        Processed = processed
+                        Processed = processed,
+                        Status = metaData?.Status,
+                        CreatedAt = metaData?.CreatedAt
                     });
             }
 

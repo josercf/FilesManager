@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FilesManager.Models
 {
@@ -11,6 +12,8 @@ namespace FilesManager.Models
         public string EndDate { get; set; }
         public string WorkLoad { get; set; }
         public string DateOfIssue { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Status { get; set; }
 
         public Dictionary<string, string> GetData()
         {

@@ -10,6 +10,8 @@ namespace FilesManager.Models.Home
         public string Name { get; set; }
         public string BlobName { get; set; }
         public bool Processed { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string Status { get; set; }
     }
 
     public class FilesViewModel
