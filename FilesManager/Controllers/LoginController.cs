@@ -24,12 +24,14 @@ namespace FilesManager.Models
             try
             {
                 if (!ModelState.IsValid)
-                    throw new ArgumentException("");
-
-                string LoginStatus = "Sucess";
-
-                if (LoginStatus != "Sucess")
-                    throw new ArgumentException("");
+                {
+                    return View(nameof(Login));
+                }
+                if (user.usuario != "admin@faisp.edu.br" && user.senha != "admin")
+                {
+                    ViewBag.Message = "Usuário ou senha inválidos";
+                    return View(nameof(Index));
+                }
 
 
                 var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.usuario) };

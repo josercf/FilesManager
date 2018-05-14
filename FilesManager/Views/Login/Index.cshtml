@@ -13,9 +13,9 @@
             <div class="row center indigo">
                 &nbsp;&nbsp; <img src="~/images/logo.png" />
             </div>
-            @if (TempData["fail"] != null)
+            @if (ViewBag.Message != null)
             {
-                <p class="alert alert-danger" style="color:red">* @TempData["fail"]</p>
+                <p class="alert alert-danger" style="color:red">* @ViewBag.Message</p>
             }
             <div class="row">
                 <div class="input-field col s12">
