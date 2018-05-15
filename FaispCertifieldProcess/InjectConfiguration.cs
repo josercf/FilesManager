@@ -1,5 +1,6 @@
 ﻿using FaispCertifieldProcess.DependencyInjection;
 using FilesManager.DataAccess.Storage;
+using FilesManager.OficceTasks;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,7 @@ namespace FaispCertifieldProcess
             var settings = new StorageAccountSettings(storageAccount, storageKey, containerName);
             services.AddTransient<StorageAccountSettings>(provider =>  { return settings; });
 
-            services.AddScoped<IGreeter, Greeter>();
+            services.AddTransient<ISheetReader, SheetProcess>();
         }
     }
 }

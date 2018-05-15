@@ -10,7 +10,7 @@ namespace FaispCertifieldProcess
         public static void Run([QueueTrigger("toprocess", Connection = "AzureWebJobsStorage")]string myQueueItem,
                                TraceWriter log)
         {
-            log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
+            log.Info($"C# Blob trigger function Processed blob\n Name: \n Size: Bytes");
         }
     }
 }

@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FilesManager.DataAccess.Storage\FilesManager.DataAccess.Storage.csproj" />
+    <ProjectReference Include="..\FilesManager.OficceTasks\FilesManager.OficceTasks.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

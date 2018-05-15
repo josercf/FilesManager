@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SheetProcess", "SheetProces
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilesManager.DataAccess.Storage", "FilesManager.DataAccess.Storage\FilesManager.DataAccess.Storage.csproj", "{5567F2D5-534B-4C85-9ECC-AC86E5BE3642}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaispCertifieldProcess", "FaispCertifieldProcess\FaispCertifieldProcess.csproj", "{B2C5179B-6870-4651-858C-AFDD968E8A48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FaispCertifieldProcess", "FaispCertifieldProcess\FaispCertifieldProcess.csproj", "{B2C5179B-6870-4651-858C-AFDD968E8A48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesManager.OficceTasks", "FilesManager.OficceTasks\FilesManager.OficceTasks.csproj", "{EB3DC2CC-D438-4F77-897E-E1A03FABD08B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{B2C5179B-6870-4651-858C-AFDD968E8A48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2C5179B-6870-4651-858C-AFDD968E8A48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2C5179B-6870-4651-858C-AFDD968E8A48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3DC2CC-D438-4F77-897E-E1A03FABD08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3DC2CC-D438-4F77-897E-E1A03FABD08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3DC2CC-D438-4F77-897E-E1A03FABD08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3DC2CC-D438-4F77-897E-E1A03FABD08B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
