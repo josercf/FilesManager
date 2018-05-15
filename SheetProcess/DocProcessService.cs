@@ -1,4 +1,9 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
+using FilesManager.DataAccess.Storage;
+using FilesManager.DataAccess.Storage.BusinessContracts;
+using FilesManager.DataAccess.Storage.Contracts;
+using FilesManager.DataAccess.Storage.Infraestructure;
+using FilesManager.DataAccess.Storage.Models;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -10,18 +15,18 @@ namespace SheetProcess
 {
     public class DocProcessService
     {
-        private readonly AzureTableStorage azureTableStorage;
-        private readonly AzureBlobStorage azureBlobStorage;
+        private readonly IDocumentService documentService;
+        private readonly IAzureBlobStorage azureBlobStorage;
         private readonly TraceWriter log;
 
-        public DocProcessService(AzureBlobSetings settings, AzureTableStorage azureTableStorage,  TraceWriter log)
+        public DocProcessService(StorageAccountSettings settings, IDocumentService documentService,  TraceWriter log)
         {
-            this.azureTableStorage = azureTableStorage;
+            this.documentService = documentService;
             this.azureBlobStorage = new AzureBlobStorage(settings);
             this.log = log;
         }
 
-        public async Task Process(byte[] b, FrontDocumentModel docData, string fileName)
+        public async Task Process(byte[] b, Document docData, string fileName)
         {
             try
             {
@@ -53,23 +58,16 @@ namespace SheetProcess
                     await azureBlobStorage.UploadAsync(fileName, stream);
                      docData.Status = "Processado";
                     log.Info($"Documento criado!");
-                    await azureTableStorage.Update(docData, "document");
+                    await documentService.Update(docData);
                     log.Info($"Documento atualizado no storage");
                 }
             }
             catch (Exception ex)
             {
                 docData.Status = "Erro ao processar";
-                await azureTableStorage.Update(docData, "document");
+                await documentService.Update(docData);
                 log.Info($"Erro ao processar documento");
             }
-        }
-
-        public async Task<FrontDocumentModel> RetrieveRecord(CloudTable table, string partitionKey, string rowKey)
-        {
-            TableOperation tableOperation = TableOperation.Retrieve<FrontDocumentModel>(partitionKey, rowKey);
-            TableResult tableResult = await table.ExecuteAsync(tableOperation);
-            return tableResult.Result as FrontDocumentModel;
         }
     }
 }

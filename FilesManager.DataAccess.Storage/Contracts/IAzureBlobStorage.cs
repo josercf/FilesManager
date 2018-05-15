@@ -1,5 +1,4 @@
-﻿using FilesManager.DataAccess.Storage.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -7,6 +6,7 @@ namespace FilesManager.DataAccess.Storage.Contracts
 {
     public interface IAzureBlobStorage
     {
+        Task CreateFromTemplate(string templateName, string fileName);
         Task UploadAsync(string blobName, string filePath);
         Task UploadAsync(string blobName, Stream stream);
         Task<MemoryStream> DownloadAsync(string blobName);

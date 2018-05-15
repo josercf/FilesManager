@@ -9,25 +9,19 @@ using System.Threading.Tasks;
 
 namespace FilesManager.DataAccess.Storage.Services
 {
-    public class UserService : IUserService
+    public class UserService : ServiceBase<User>, IUserService
     {
-        private readonly IAzureTableStorage<User> tableStorage;
 
         public UserService(IAzureTableStorage<User> tableStorage)
+            : base(tableStorage)
         {
-            this.tableStorage = tableStorage;
             tableStorage.SetTableName(nameof(User));
         }
 
-        public async Task<List<User>> Get(string query = null)
-        {
-           return await tableStorage.Retrieve(query);
-        }
-
-        public async Task Insert(User entity)
+        public override Task Insert(User entity)
         {
             entity.CreatedAt = DateTime.Now;
-            await tableStorage.Insert(entity);
+            return base.Insert(entity);
         }
 
         public async Task<User> Authenticate(string email, string password)
@@ -36,11 +30,6 @@ namespace FilesManager.DataAccess.Storage.Services
             var user = await Get(query);
 
             return user.FirstOrDefault();
-        }
-
-        public async Task Update(User entity)
-        {
-            await tableStorage.Insert(entity, false);
         }
     }
 }

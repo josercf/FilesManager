@@ -9,21 +9,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using S = DocumentFormat.OpenXml.Spreadsheet.Sheets;
 using E = DocumentFormat.OpenXml.OpenXmlElement;
+using FilesManager.DataAccess.Storage.BusinessContracts;
+using FilesManager.DataAccess.Storage.Models;
 
 namespace SheetProcess
 {
     public class SheetProcessService
     {
         private readonly TraceWriter log;
-        private readonly ICollector<FrontDocumentModel> queueCollector;
-        private readonly AzureTableStorage azureTableStorage;
+        private readonly ICollector<Document> queueCollector;
+        private readonly IDocumentService documentService;
 
-        public SheetProcessService(ICollector<FrontDocumentModel> queueCollector, AzureBlobSetings settings, TraceWriter log)
+        public SheetProcessService(ICollector<Document> queueCollector,
+                                   IDocumentService documentService, TraceWriter log)
         {
-            this.azureTableStorage = new AzureTableStorage(settings);
             this.queueCollector = queueCollector;
+            this.documentService = documentService;
             this.log = log;
-
         }
 
         public async Task ProcessSheet(Stream file)
@@ -42,7 +44,7 @@ namespace SheetProcess
                     try
                     {
                         sheetName = sheet.GetAttributes().First(c => c.LocalName == "name").Value;
-                        var sheetId = sheet.GetAttributes().First(c => c.LocalName == "id").Value; 
+                        var sheetId = sheet.GetAttributes().First(c => c.LocalName == "id").Value;
                         log.Info($"Sheet Founded: name: {sheetName}, id: {sheetId}");
 
                         tasks[i] = ReadExcelSheet(mySpreadsheet, sheetId);
@@ -98,7 +100,7 @@ namespace SheetProcess
                 if (string.IsNullOrWhiteSpace(document.StudentName)) continue;
                 log.Info($"Send data to queue: {document.StudentName}");
 
-                await azureTableStorage.Insert(document, nameof(document));
+                await documentService.Insert(document);
                 queueCollector.Add(document);
             }
         }
@@ -120,20 +122,21 @@ namespace SheetProcess
                 Cell celCourseTitle = cellsTitle.ElementAt(i);
                 var cellValue = GetCellValue(doc, celCourseTitle);
 
-                if (!string.IsNullOrWhiteSpace(cellValue) && 
+                if (!string.IsNullOrWhiteSpace(cellValue) &&
                     cellValue.StartsWith("Pós-Graduação")) return ExtractCourseName(cellValue);
             }
             return string.Empty;
         }
 
-        private async Task<FrontDocumentModel> ExtractFrontDocumentData(SpreadsheetDocument doc, IEnumerable<Cell> cells,
+        private async Task<Document> ExtractFrontDocumentData(SpreadsheetDocument doc, IEnumerable<Cell> cells,
                                                      string courseName, uint rowIndex, DataPosition data)
         {
             return await Task.Factory.StartNew(() =>
             {
-                var documentFront = new FrontDocumentModel(
-                    GetCellValue(doc, cells.FindCell(data.NameCol, rowIndex))?.Trim(),
-                    GetCellValue(doc, cells.FindCell(data.DocumentCol, rowIndex))?.Trim());
+                var documentFront = new Document();
+
+                documentFront.StudentName = GetCellValue(doc, cells.FindCell(data.NameCol, rowIndex))?.Trim();
+                documentFront.StudentDocument = GetCellValue(doc, cells.FindCell(data.DocumentCol, rowIndex))?.Trim();
 
                 documentFront.Course = courseName;
 
@@ -141,12 +144,15 @@ namespace SheetProcess
                 documentFront.StartDate = GetCellValue(doc, cells.FindCell(data.StartDateCol, rowIndex))?.ParseDate();
                 documentFront.EndDate = GetCellValue(doc, cells.FindCell(data.EndDateCol, rowIndex))?.ParseDate();
                 documentFront.WorkLoad = GetCellValue(doc, cells.FindCell(data.WorkLoadCol, rowIndex));
+                //TODO: criar enum para status
                 documentFront.Status = "Aguardando processamento";
+                //TODO: colocar data por extenso
                 documentFront.DateOfIssue = DateTime.Now.ToString("dd/MM/yyyy") + ".";
                 return documentFront;
             });
         }
 
+        //TODO: verificar document type
         private string ExtractCourseName(string courseName) => courseName.Substring("Pós-Graduação em ".Length);
 
         private string GetCellValue(SpreadsheetDocument doc, Cell cell)

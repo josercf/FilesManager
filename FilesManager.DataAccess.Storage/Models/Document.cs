@@ -1,28 +1,11 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace SheetProcess
+namespace FilesManager.DataAccess.Storage.Models
 {
-    public class FrontDocumentModel : TableEntity
+    public class Document : EntityBase
     {
-
-        public FrontDocumentModel() { }
-        public FrontDocumentModel(string studentName, string studentDocument)
-        {
-            if (string.IsNullOrWhiteSpace(studentName) ||
-                string.IsNullOrWhiteSpace(studentDocument))
-                return;
-
-            this.PartitionKey = studentName;
-            this.RowKey = studentName;
-
-            StudentName = studentName;
-            StudentDocument = studentDocument;
-            CreatedAt = DateTime.Now;
-        }
-
         public string StudentName { get; set; }
         public string StudentDocument { get; set; }
         public string Course { get; set; }
@@ -31,7 +14,12 @@ namespace SheetProcess
         public string WorkLoad { get; set; }
         public string DateOfIssue { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string DocumentFront { get { return $"{folderName}/{StudentName}-frente{documentExtension}"; } }
+        public string DocumentBack { get { return $"{folderName}/{StudentName}-verso{documentExtension}"; } }
         public string Status { get; set; }
+
+        private string folderName = "docs";
+        private string documentExtension = ".docx";
 
         public Dictionary<string, string> GetData()
         {
@@ -48,5 +36,6 @@ namespace SheetProcess
 
             return data;
         }
+
     }
 }

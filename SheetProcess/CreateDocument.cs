@@ -1,6 +1,8 @@
+using FilesManager.DataAccess.Storage;
+using FilesManager.DataAccess.Storage.Infraestructure;
+using FilesManager.DataAccess.Storage.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
 
@@ -16,23 +18,19 @@ namespace SheetProcess
             {
                 log.Info($"C# Queue trigger function processed: {myQueueItem}");
 
-                var storageAccount = GetEnvironmentVariable("Blob_StorageAccount");
-                var storageKey = GetEnvironmentVariable("Blob_StorageKey");
-                var containerName = GetEnvironmentVariable("Blob_ContainerName");
+                var storageAccount = "cosmoshoroscopob34c";
+                var storageKey = "ortdcoPVj90rv0GyPGDzMN/jN+5K0izumxFbIqvRM6MiDcXQwcNLSJomGeDQE3RdfhowIyH9MQw856fikwiIrw==";
+                var containerName = "teste";
 
-                storageAccount = "cosmoshoroscopob34c";
-                storageKey = "ortdcoPVj90rv0GyPGDzMN/jN+5K0izumxFbIqvRM6MiDcXQwcNLSJomGeDQE3RdfhowIyH9MQw856fikwiIrw==";
-                containerName = "teste";
-
-                var settings = new AzureBlobSetings(storageAccount, storageKey, containerName);
+                var settings = new StorageAccountSettings(storageAccount, storageKey, containerName);
 
                 var storage = new AzureBlobStorage(settings);
-                var docData = JsonConvert.DeserializeObject<FrontDocumentModel>(myQueueItem);
-                await storage.CreateFromTemplate("templates/TemplatePosFrente.docx", $"docs/{docData.StudentName}-frente.docx");
+                var docData = JsonConvert.DeserializeObject<Document>(myQueueItem);
+                await storage.CreateFromTemplate("templates/TemplatePosFrente.docx", docData.DocumentFront);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                log.Info($"Ocorreu um erro ao processar criar o novo arquivo");
+                log.Info($"Ocorreu um erro ao processar criar o novo arquivo \n{ex}");
             }
         }
 

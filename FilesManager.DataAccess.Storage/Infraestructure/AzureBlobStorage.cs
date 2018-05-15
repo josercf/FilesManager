@@ -18,6 +18,15 @@ namespace FilesManager.DataAccess.Storage.Infraestructure
             this.settings = settings;
         }
 
+        public async Task CreateFromTemplate(string templateName, string fileName)
+        {
+            var container = await GetContainerAsync();
+            await container.CreateIfNotExistsAsync();
+            var source = container.GetBlockBlobReference(templateName);
+            CloudBlockBlob target = container.GetBlockBlobReference(fileName);
+            await target.StartCopyAsync(source);
+        }
+
         public async Task UploadAsync(string blobName, string filePath)
         {
             //Blob

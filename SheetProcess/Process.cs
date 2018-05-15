@@ -2,6 +2,11 @@ using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using System;
+using FilesManager.DataAccess.Storage;
+using FilesManager.DataAccess.Storage.Infraestructure;
+using FilesManager.DataAccess.Storage.Models;
+using System.Linq;
+using FilesManager.DataAccess.Storage.BusinessContracts;
 
 namespace SheetProcess
 {
@@ -10,20 +15,20 @@ namespace SheetProcess
         [FunctionName("Process")]
         public static async void Run([BlobTrigger("teste/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob,
                                string name,
-                              [Queue("toprocess", Connection = "AzureWebJobsStorage")] ICollector<FrontDocumentModel> queueCollector,
+                              [Queue("toprocess", Connection = "AzureWebJobsStorage")] ICollector<Document> queueCollector,
                               TraceWriter log)
         {
             var storageAccount = "cosmoshoroscopob34c";
             var storageKey = "ortdcoPVj90rv0GyPGDzMN/jN+5K0izumxFbIqvRM6MiDcXQwcNLSJomGeDQE3RdfhowIyH9MQw856fikwiIrw==";
             var containerName = "teste";
 
-            var settings = new AzureBlobSetings(storageAccount, storageKey, containerName);
-
+            var settings = new StorageAccountSettings(storageAccount, storageKey, containerName);
+            IDocumentService documentService = null;
             if (name.StartsWith("uploads"))
             {
                 try
                 {
-                    var sheetService = new SheetProcessService(queueCollector, settings, log);
+                    var sheetService = new SheetProcessService(queueCollector, documentService, log);
                     await sheetService.ProcessSheet(myBlob);
                 }
                 catch (Exception e)
@@ -37,7 +42,7 @@ namespace SheetProcess
                 try
                 {
                     var tableName = "document";
-                    var azureTableStorage = new AzureTableStorage(settings);
+                    var azureTableStorage = new AzureTableStorage<Document>(settings, tableName);
 
                     //Is necessary create new byte array here, because has timeout and 
                     //we can't edite the word file after
@@ -46,13 +51,14 @@ namespace SheetProcess
                         b = br.ReadBytes((int)myBlob.Length);
 
                     var pk = ClearFileName(name);
-                    var docData = await azureTableStorage.Get<FrontDocumentModel>(tableName, pk, pk);
+                    var result = await azureTableStorage.Retrieve("");
+                    var docData = result.FirstOrDefault();
 
                     if (docData?.Status == "Aguardando processamento")
                     {
                         docData.Status = "Processando";
-                        await azureTableStorage.Update(docData, tableName);
-                        var docService = new DocProcessService(settings, azureTableStorage, log);
+                        await azureTableStorage.Insert(docData);
+                        var docService = new DocProcessService(settings, documentService, log);
                         await docService.Process(b, docData, name);
                     }
                 }
