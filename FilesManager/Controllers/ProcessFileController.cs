@@ -54,7 +54,7 @@ namespace FilesManager.Controllers
                     docText = sr.ReadToEnd();
                 }
 
-                foreach (var item in data.GetData())
+                foreach (var item in data.Get())
                 {
                     Regex regexText = new Regex(item.Key.ToUpper());
                     docText = regexText.Replace(docText, item.Value);
