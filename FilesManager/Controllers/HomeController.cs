@@ -22,7 +22,8 @@ namespace FilesManager.Controllers
         private readonly IHostingEnvironment _environment;
 
         public HomeController(IAzureBlobStorage blobStorage,
-                               AzureTableStorage azureTableStorage, IHostingEnvironment environment)
+                              AzureTableStorage azureTableStorage,
+                              IHostingEnvironment environment)
         {
             this.azureTableStorage = azureTableStorage;
             this.blobStorage = blobStorage;

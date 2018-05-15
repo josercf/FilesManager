@@ -27,7 +27,7 @@ namespace FilesManager.Models
                 {
                     return View(nameof(Login));
                 }
-                if (user.usuario != "admin@faisp.edu.br" && user.senha != "admin")
+                if (user.usuario != "admin@faisp.edu.br" || user.senha != "admin")
                 {
                     ViewBag.Message = "Usuário ou senha inválidos";
                     return View(nameof(Index));

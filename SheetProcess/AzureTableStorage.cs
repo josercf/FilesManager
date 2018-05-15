@@ -1,11 +1,7 @@
-﻿using Microsoft.Azure;
-using Microsoft.WindowsAzure.Storage;
+﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SheetProcess
@@ -46,6 +42,18 @@ namespace SheetProcess
             var tableOperation = TableOperation.Retrieve<T>(partitionKey, rowKey);
             var tableResult = await table.ExecuteAsync(tableOperation);
             return tableResult.Result as T;
+        }
+
+        public async Task<T> GetAll<T>(string tableName) where T : class, ITableEntity, new()
+        {
+            // Create the table client.
+            var tableClient = await GetContainerAsync();
+
+            // Create the CloudTable object that represents the "people" table.
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            var tableResult = table.ExecuteQuery(new TableQuery<T>()).ToList();
+            return tableResult as T;
         }
 
         public async Task Update(ITableEntity model, string tableName)

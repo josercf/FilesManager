@@ -1,7 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FilesManager.Storage
@@ -44,7 +43,18 @@ namespace FilesManager.Storage
             return tableResult.Result as T;
         }
 
-        
+        public async Task<T> GetAll<T>(string tableName) where T : class
+        {
+            // Create the table client.
+            var tableClient = await GetContainerAsync();
+
+            // Create the CloudTable object that represents the "people" table.
+            CloudTable table = tableClient.GetTableReference(tableName);
+
+            var tableResult = await table.ExecuteQuerySegmentedAsync(new TableQuery(), new TableContinuationToken());
+            return tableResult.Results as T;
+        }
+
         public async Task Update(ITableEntity model, string tableName)
         {
             // Create the table client.
@@ -56,7 +66,6 @@ namespace FilesManager.Storage
             var tableOperation = TableOperation.Replace(model);
             var tableResult = await table.ExecuteAsync(tableOperation);
         }
-
         private async Task<CloudTableClient> GetContainerAsync()
         {
             //Account

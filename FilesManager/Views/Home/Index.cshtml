@@ -49,6 +49,19 @@
 
         @foreach (var item in Model.Files)
         {
+            <tr>
+                <td>@item.Name</td>
+                <td>Processado</td>
+                <td>
+                    <a asp-action="Download"
+                       asp-route-blobName="@item.BlobName" asp-route-name="@item.Name" class="btn waves-effect indigo">
+                        <i class="material-icons">cloud_download</i>
+                    </a>
+                    <button data-name="@item.BlobName" class="btn-delete btn waves-effect indigo modal-trigger">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </td>
+            </tr>
         <tr>
             <td>@item.Name</td>
             <td>@item.CreatedAt</td>
@@ -79,7 +92,7 @@
     <div class="modal-footer">
         <a href="#!" class="waves-effect indigo btn modal-trigger">Cancelar</a>
         <a id="modal-btn-delete" href="#"
-            class="waves-effect red darken-1 btn modal-trigger">
+           class="waves-effect red darken-1 btn modal-trigger">
             <i class="material-icons">delete</i>
         </a>
         <a href="#!">Deletar</a>
@@ -98,7 +111,7 @@
         $('.modal').modal('open');
     });
 
-    $(document).ready(function () { 
+    $(document).ready(function () {
         $('.modal').modal();
     });
 

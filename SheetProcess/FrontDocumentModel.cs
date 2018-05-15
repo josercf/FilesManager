@@ -1,18 +1,18 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SheetProcess
 {
     public class FrontDocumentModel : TableEntity
     {
-        public FrontDocumentModel()
-        {
+        private readonly AzureTableStorage azureTableStorage;
 
-        }
+        public FrontDocumentModel() { }
         public FrontDocumentModel(string studentName, string studentDocument)
         {
-            if(string.IsNullOrWhiteSpace(studentName) || 
+            if (string.IsNullOrWhiteSpace(studentName) ||
                 string.IsNullOrWhiteSpace(studentDocument))
                 return;
 
@@ -34,22 +34,22 @@ namespace SheetProcess
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; }
 
-
-
-        public Dictionary<string, string> GetData()
+        public async Task<FrontDocumentModel> GetData()
         {
-            var data = new Dictionary<string, string>
-            {
-                { nameof(StudentName), StudentName },
-                { nameof(StudentDocument), StudentDocument },
-                { nameof(Course), Course },
-                { nameof(StartDate), StartDate },
-                { nameof(EndDate), EndDate },
-                { nameof(WorkLoad), WorkLoad },
-                { nameof(DateOfIssue), DateOfIssue }
-            };
+            return await azureTableStorage.GetAll<FrontDocumentModel>("document");
 
-            return data;
+            //var data = new Dictionary<string, string>
+            //{
+            //    { nameof(StudentName), StudentName },
+            //    { nameof(StudentDocument), StudentDocument },
+            //    { nameof(Course), Course },
+            //    { nameof(StartDate), StartDate },
+            //    { nameof(EndDate), EndDate },
+            //    { nameof(WorkLoad), WorkLoad },
+            //    { nameof(DateOfIssue), DateOfIssue }
+            //};
+
+            //return data;
         }
     }
 }
