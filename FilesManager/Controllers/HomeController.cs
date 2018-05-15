@@ -1,66 +1,24 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using FilesManager.DataAccess.Storage.Contracts;
 using FilesManager.Models.Home;
-using FilesManager.Storage;
-using System.Linq;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
-using FilesManager.Models;
-using System.Collections.Generic;
-using System.Net.Http;
-using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace FilesManager.Controllers
 {
-
-
     [Authorize]
     public class HomeController : Controller
     {
         private readonly IAzureBlobStorage blobStorage;
-        private readonly AzureTableStorage azureTableStorage;
-        private readonly IHostingEnvironment _environment;
 
-        public HomeController(IAzureBlobStorage blobStorage,
-                              AzureTableStorage azureTableStorage,
-                              IHostingEnvironment environment)
+        public HomeController(IAzureBlobStorage blobStorage)
         {
-            this.azureTableStorage = azureTableStorage;
             this.blobStorage = blobStorage;
-            this._environment = environment;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-
-            var model = new FilesViewModel();
-            var blobs = await blobStorage.ListAsync();
-            foreach (var item in blobs.Where(c => c.Folder.Equals("docs")))
-            {
-
-                var http = new HttpClient();
-                var url = string.Format("http://localhost:7071/api/GetDocument?blobname={0}", item.BlobName);
-                var response = await http.GetAsync(url);
-                var result = await response.Content.ReadAsStringAsync();
-
-                var metaData = JsonConvert.DeserializeObject<Models.FrontDocumentModel>(result);
-
-                var processed = metaData != null &&
-                                metaData.Status.ToLower() == "processado";
-
-                model.Files.Add(
-                    new FileDetails
-                    {
-                        Name = item.Name,
-                        BlobName = item.BlobName,
-                        Processed = processed,
-                        Status = metaData?.Status,
-                        CreatedAt = metaData?.CreatedAt
-                    });
-            }
-
-            ViewBag.Message = ViewBag?.Message ?? string.Empty;
-            return View(model);
+            return View();
         }
 
         [HttpPost]

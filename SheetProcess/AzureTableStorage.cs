@@ -52,6 +52,7 @@ namespace SheetProcess
             // Create the CloudTable object that represents the "people" table.
             CloudTable table = tableClient.GetTableReference(tableName);
 
+         
             var tableResult = table.ExecuteQuery(new TableQuery<T>()).ToList();
             return tableResult as T;
         }

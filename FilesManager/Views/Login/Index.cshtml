@@ -20,19 +20,19 @@
             <div class="row">
                 <div class="input-field col s12">
                     <i class="material-icons prefix pt-5">person_outline</i>
-                    <input asp-for="@Model.usuario" />
-                    <label asp-for="@Model.usuario" class="center-align">Email</label>
+                    <input asp-for="@Model.User" />
+                    <label asp-for="@Model.User" class="center-align">Email</label>
                 </div>
             </div>
             <div class="row">
                 <div class="input-field col s12">
                     <i class="material-icons prefix pt-5 ">lock_outline</i>
-                    <input asp-for="@Model.senha"  type="password"/>
-                    <label asp-for="@Model.senha" class="center-align">Senha</label>
+                    <input asp-for="@Model.Password"  type="password"/>
+                    <label asp-for="@Model.Password" class="center-align">Senha</label>
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s12">
+                <div class="input-field col s6 right">
                     <button class="btn waves-effect indigo" type="submit" name="action" value="Entrar">
                         Entrar
                     </button>

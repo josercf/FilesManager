@@ -9,10 +9,10 @@ namespace FilesManager.Models.Login
 
         [Required(ErrorMessage = "Informe o usuário.")]
         [DisplayName("Usuário:")]
-        public string usuario { get; set; }
+        public string User { get; set; }
 
         [Required(ErrorMessage = "Informe a senha.")]
         [DisplayName("Senha:")]
-        public string senha { get; set; }
+        public string Password { get; set; }
     }
 }

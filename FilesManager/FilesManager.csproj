@@ -18,12 +18,11 @@
 
   <ItemGroup>
     <Folder Include="Docs\" />
-    <Folder Include="Models\Docs\" />
     <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FilesManager.Storage\FilesManager.Storage.csproj" />
+    <ProjectReference Include="..\FilesManager.DataAccess.Storage\FilesManager.DataAccess.Storage.csproj" />
   </ItemGroup>
 
 </Project>

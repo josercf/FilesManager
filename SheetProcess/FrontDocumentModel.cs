@@ -7,7 +7,6 @@ namespace SheetProcess
 {
     public class FrontDocumentModel : TableEntity
     {
-        private readonly AzureTableStorage azureTableStorage;
 
         public FrontDocumentModel() { }
         public FrontDocumentModel(string studentName, string studentDocument)
@@ -34,22 +33,20 @@ namespace SheetProcess
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; }
 
-        public async Task<FrontDocumentModel> GetData()
+        public Dictionary<string, string> GetData()
         {
-            return await azureTableStorage.GetAll<FrontDocumentModel>("document");
+            var data = new Dictionary<string, string>
+            {
+                { nameof(StudentName), StudentName },
+                { nameof(StudentDocument), StudentDocument },
+                { nameof(Course), Course },
+                { nameof(StartDate), StartDate },
+                { nameof(EndDate), EndDate },
+                { nameof(WorkLoad), WorkLoad },
+                { nameof(DateOfIssue), DateOfIssue }
+            };
 
-            //var data = new Dictionary<string, string>
-            //{
-            //    { nameof(StudentName), StudentName },
-            //    { nameof(StudentDocument), StudentDocument },
-            //    { nameof(Course), Course },
-            //    { nameof(StartDate), StartDate },
-            //    { nameof(EndDate), EndDate },
-            //    { nameof(WorkLoad), WorkLoad },
-            //    { nameof(DateOfIssue), DateOfIssue }
-            //};
-
-            //return data;
+            return data;
         }
     }
 }

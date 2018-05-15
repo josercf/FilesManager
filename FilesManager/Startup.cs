@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FilesManager.Storage;
+﻿using FilesManager.DataAccess.Storage;
+using FilesManager.DataAccess.Storage.BusinessContracts;
+using FilesManager.DataAccess.Storage.Contracts;
+using FilesManager.DataAccess.Storage.Infraestructure;
+using FilesManager.DataAccess.Storage.Models;
+using FilesManager.DataAccess.Storage.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,17 +28,18 @@ namespace FilesManager
             var storageKey = Configuration["Blob_StorageKey"];
             var containerName = Configuration["Blob_ContainerName"];
 
-            var settings = new AzureBlobSetings(storageAccount, storageKey, containerName);
+            var _settings = new StorageAccountSettings(storageAccount, storageKey, containerName);
 
-            services.AddScoped<IAzureBlobStorage>(factory =>
+            services.AddTransient<StorageAccountSettings>(provider => { return _settings; });
+            services.AddTransient<IAzureBlobStorage, AzureBlobStorage>();
+            services.AddTransient(typeof(IAzureTableStorage<>), typeof(AzureTableStorage<>));
+
+            services.AddTransient<IUserService, UserService>((ctx) =>
             {
-                return new AzureBlobStorage(settings);
+                IAzureTableStorage<User> svc = ctx.GetService<IAzureTableStorage<User>>();
+                return new UserService(svc);
             });
 
-            services.AddTransient<AzureTableStorage, AzureTableStorage>(factory =>
-            {
-                return new AzureTableStorage(settings);
-            } );
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                    .AddCookie(options =>
