@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FilesManager.DataAccess.Storage.Models
 {
@@ -17,6 +16,7 @@ namespace FilesManager.DataAccess.Storage.Models
         public string DocumentFront { get { return $"{folderName}/{StudentName}-frente{documentExtension}"; } }
         public string DocumentBack { get { return $"{folderName}/{StudentName}-verso{documentExtension}"; } }
         public string Status { get; set; }
+        public string CourseType { get; set; }
 
         private string folderName = "docs";
         private string documentExtension = ".docx";
